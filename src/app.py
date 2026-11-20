@@ -1,33 +1,43 @@
-import streamlit as st
+import sys
 
 try:
-    from src.client import extrair_tarefas
+    from src.client import chamar_modelo, validar_anotacao
 except ImportError:
-    from client import extrair_tarefas
+    from client import chamar_modelo, validar_anotacao
 
-st.set_page_config(page_title="Extrator de Tarefas", page_icon="📋")
 
-st.title("📋 Extrator de Tarefas de Reunião")
-st.caption("Cole as anotações ou transcrição da reunião para extrair tarefas, responsáveis e prazos.")
+def iniciar_aplicacao():
+    print("=" * 55)
+    print("   Extrator de Tarefas e Compromissos de Reunião (P0)   ")
+    print("=" * 55)
+    print("Digite sua anotação ou digite 'sair' para encerrar.\n")
 
-anotacao = st.text_area(
-    "Anotação da reunião:",
-    height=180,
-    placeholder="Ex: A Maria vai enviar o relatório financeiro até sexta às 18h e o Carlos vai agendar a reunião de alinhamento."
-)
+    while True:
+        try:
+            entrada = input("Anotação > ")
 
-if st.button("Extrair Tarefas", type="primary"):
-    texto_limpo = anotacao.strip()
-    
-    if not texto_limpo:
-        st.error("A anotação não pode estar vazia.")
-    elif len(texto_limpo) < 10:
-        st.warning("Anotação muito curta. Forneça mais contexto sobre a reunião.")
-    else:
-        with st.spinner("Analisando texto com o modelo..."):
-            try:
-                resultado = extrair_tarefas(texto_limpo)
-                st.subheader("Tarefas Identificadas")
-                st.markdown(resultado)
-            except Exception as e:
-                st.error(f"Falha na operação: {e}")
+            if entrada.strip().lower() in ("sair", "exit", "quit"):
+                print("\nEncerrando a aplicação. Até logo!")
+                break
+
+            valido, erro = validar_anotacao(entrada)
+            if not valido:
+                print(f"[ERRO] {erro}")
+                continue
+
+            print("\nProcessando com o modelo de linguagem...")
+            resultado = chamar_modelo(entrada)
+
+            print("\n" + "-" * 20 + " TAREFAS EXTRAÍDAS " + "-" * 20)
+            print(resultado.strip())
+            print("-" * 59 + "\n")
+
+        except KeyboardInterrupt:
+            print("\n\nExecução interrompida pelo usuário.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"\n[FALHA NA OPERAÇÃO]: {e}\n")
+
+
+if __name__ == "__main__":
+    iniciar_aplicacao()
