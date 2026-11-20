@@ -222,3 +222,5 @@ __marimo__/
 # Chaves e credenciais sensíveis locais
 replace_keys.txt
 
+# Imagens Docker exportadas
+*.tar

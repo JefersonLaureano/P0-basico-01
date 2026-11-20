@@ -1,0 +1,6 @@
+.venv
+.env
+**pycache**
+\*.tar
+.git
+.pytest_cache
